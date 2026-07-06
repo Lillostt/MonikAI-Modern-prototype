@@ -241,63 +241,35 @@ def listenToClient(client):
             print("User: "+received_msg)
 
             if not launched:
-                pw = sync_playwright().start()
-                try:
-                    browser = pw.firefox.launch(headless=False)
-                    context = browser.new_context()
-                    page = launch(context)
-                except:
-                    print("Launch failed. Please check if text-generation_webui is running.")
-                    _ = client.recv(BUFSIZE).decode("utf-8")
-                    sendMessage("server_error".encode("utf-8"))
-                    launched = False
-                    pw.stop()
-                    continue
                 launched = True
                 _ = client.recv(BUFSIZE).decode("utf-8")
                 sendMessage("server_ok".encode("utf-8"))
+
             try:
-                post_message(page, received_msg)
-            except:
-                print("Error while sending message. Please check if text-generation_webui is running or if the model is loaded.")
+                msg = post_message(None, received_msg)
+            except Exception as exc:
+                print(f"Error while sending message: {exc}")
                 _ = client.recv(BUFSIZE).decode("utf-8")
                 sendMessage("server_error".encode("utf-8"))
                 launched = False
-                pw.stop()
                 continue
-            while True:
-                stop_button = page.locator('[class="lg secondary svelte-cmf5ev hidden"]')
-                stop_button_style = stop_button.get_attribute("style")
-                if "display: none;" in stop_button_style:
-                    user = page.locator('[class="message-body"]').locator("nth=-1")
-                    text = user.inner_html()
-                    if len(text) > 0:
-                        msg = text
-                        msg = re.sub(r'<[^>]+>', '', msg)
-                        msg = msg.replace('\n', '')
-                        msg = os.linesep.join([s for s in msg.splitlines() if s])
-                        msg = re.sub(' +', ' ', msg)
-                        msg = re.sub(r'&[^;]+;', '', msg)
-                        msg = msg.replace("END", "")
-                    else:
-                        continue
-                    if received_msg != "QUIT":
-                        if USE_TTS:
-                            print("Using TTS")
-                            play_obj = play_TTS(
-                                step,
-                                msg,
-                                play_obj,
-                                sampling_rate,
-                                tts_model,
-                                voice_samples,
-                                conditioning_latents,
-                                TTS_MODEL,
-                                VOICE_SAMPLE_COQUI,
-                                uni_chr_re)
-                        print("Sent: " + msg)
-                        send_answer(received_msg, msg)
-                    break
+
+            if received_msg != "QUIT":
+                if USE_TTS:
+                    print("Using TTS")
+                    play_obj = play_TTS(
+                        step,
+                        msg,
+                        play_obj,
+                        sampling_rate,
+                        tts_model,
+                        voice_samples,
+                        conditioning_latents,
+                        TTS_MODEL,
+                        VOICE_SAMPLE_COQUI,
+                        uni_chr_re)
+                print("Sent: " + msg)
+                send_answer(received_msg, msg)
 
 
 if __name__ == "__main__":
