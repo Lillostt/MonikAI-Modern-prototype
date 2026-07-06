@@ -9,6 +9,7 @@ from playwright.sync_api import sync_playwright
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
+from api_client import ask_monika
 from scripts.login_screen import CONFIG
 from scripts.utils import HiddenPrints
 
@@ -134,11 +135,8 @@ def launch(context):
 
 def post_message(page, message):
     if message == "QUIT":
-        page.fill("[class='svelte-1f354aw pretty_scrollbar']", "I'll be right back")
-    else:
-        page.fill("[class='svelte-1f354aw pretty_scrollbar']", message)
-    page.click('[id="Generate"]')
-    page.wait_for_selector('[class="lg secondary svelte-cmf5ev hidden"]')
+        message = "I'll be right back"
+    return ask_monika(message)
 
 
 # Main
