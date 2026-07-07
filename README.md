@@ -6,3 +6,7 @@ Current goal:
 - Remove Firefox dependency
 - Remove Playwright
 - Support TextGen 4.9+
+
+
+  WARNING
+  This specific repository is ONLY a prototype for the main.py code, not the REAL MonikAI folder and submod
